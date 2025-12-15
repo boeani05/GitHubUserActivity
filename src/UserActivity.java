@@ -4,8 +4,6 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class UserActivity {
     public void fetchRecentActivity(String userName) throws IOException, URISyntaxException, InterruptedException {
@@ -18,12 +16,18 @@ public class UserActivity {
 
             String httpResponseBody = httpResponse.body();
 
-            httpResponseBody = httpResponseBody.replaceAll("\\[", "");
+            String[] splitType = httpResponseBody.split("\"type\": *");
 
-            int eventTypeIndex;
-            Pattern pattern = Pattern.compile("\"type\": \"");
-            if (new Matcher().matches(pattern)) {
-                eventTypeIndex = httpResponseBody.indexOf(8);
+
+            int startQuote;
+            int endQuote;
+            String event;
+
+            if (splitType.length > 1) {
+                startQuote = splitType[1].indexOf("\"");
+                endQuote = splitType[1].indexOf("\"", startQuote + 1);
+                event = splitType[1].substring(startQuote + 1, endQuote);
+                System.out.println(event);
             }
         }
     }
