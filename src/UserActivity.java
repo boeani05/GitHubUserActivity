@@ -10,21 +10,19 @@ import java.util.regex.Pattern;
 public class UserActivity {
     public void fetchRecentActivity(String userName) throws IOException, URISyntaxException, InterruptedException {
         Pattern basicPattern;
-        Pattern pullRequestPattern;
-        Pattern watchEventPattern;
+        Pattern pullRequestAndIssuesEventPattern;
         Matcher basicMatcher;
         Matcher pullRequestMatcher;
-        Matcher watchEventMatcher;
+        Matcher issuesEventsMatcher;
         String eventType;
         String repoName;
         String currentRepoName = null;
         String currentJsonBlock;
-        String capitalizedPullRequestAction;
+
         int counter;
 
         basicPattern = Pattern.compile("\"type\":\\s*\"([^\"]*)\".*?\"repo\":\\s*\\{.*?\"name\":\\s*\"([^\"]*)\".*?}(?=\\s*,\\s*\\{\"id\":|]$)");
-        pullRequestPattern = Pattern.compile(".*?\"name\":\"([^\"]*).*?\"action\":\"(\\w+)\"");
-        watchEventPattern = Pattern.compile(".*?\"name\":\"([^\"]*)");
+        pullRequestAndIssuesEventPattern = Pattern.compile(".*?\"action\":\"(\\w+)\"");
 
 
         String urlAddress = String.format("https://api.github.com/users/%s/events", userName);
@@ -58,31 +56,44 @@ public class UserActivity {
                         counter = 0;
                         currentRepoName = null;
                     }
-                }
-                if ("PullRequestEvent".equals(eventType)) {
-                    String pullRequestAction;
-                    String pullRequestName;
+                    switch (eventType) {
+                        case "PullRequestEvent" -> {
+                            String pullRequestAction = "performed an action on";
+                            String capitalizedPullRequestAction;
 
-                    pullRequestMatcher = pullRequestPattern.matcher(currentJsonBlock);
+                            pullRequestMatcher = pullRequestAndIssuesEventPattern.matcher(currentJsonBlock);
 
-                    if (pullRequestMatcher.find()) {
-                        pullRequestName = pullRequestMatcher.group(1);
-                        pullRequestAction = pullRequestMatcher.group(2);
-                        capitalizedPullRequestAction = pullRequestAction.substring(0, 1).toUpperCase() + pullRequestAction.substring(1);
+                            if (pullRequestMatcher.find()) {
+                                pullRequestAction = pullRequestMatcher.group(1);
+                                capitalizedPullRequestAction = pullRequestAction.substring(0, 1).toUpperCase() + pullRequestAction.substring(1);
+                            } else {
+                                capitalizedPullRequestAction = pullRequestAction;
+                            }
+                            System.out.printf("- %s a pull request in %s%n", capitalizedPullRequestAction, repoName);
+                        }
+                        case "WatchEvent" -> System.out.printf("- Starred %s%n", repoName);
+                        case "IssuesEvent" -> {
+                            String issuesEventAction = "performed an action on";
+                            String capitalizedIssuesEventAction;
 
-                        System.out.printf("- %s a pull request in %s%n", capitalizedPullRequestAction, pullRequestName);
+                            issuesEventsMatcher = pullRequestAndIssuesEventPattern.matcher(currentJsonBlock);
+
+                            if (issuesEventsMatcher.find()) {
+                                issuesEventAction = issuesEventsMatcher.group(1);
+                                capitalizedIssuesEventAction = issuesEventAction.substring(0, 1).toUpperCase() + issuesEventAction.substring(1);
+                            } else {
+                                capitalizedIssuesEventAction = issuesEventAction;
+                            }
+                            System.out.printf("- %s an issue in %s%n", capitalizedIssuesEventAction, repoName);
+                        }
+                        case null, default ->
+                                System.out.printf("- Unknown event type: %s in %s%n", eventType, repoName);
                     }
-                } else if ("WatchEvent".equals(eventType)) {
-                    String watchEventName;
-
-                    watchEventMatcher = watchEventPattern.matcher(currentJsonBlock);
-
-                    if (watchEventMatcher.find()) {
-                        watchEventName = watchEventMatcher.group(1);
-
-                        System.out.printf("- Starred %s%n", watchEventName);
-                    }
                 }
+            }
+
+            if (counter > 0) {
+                System.out.printf("- Pushed %d commit(s) to %s%n", counter, currentRepoName);
             }
         }
     }
