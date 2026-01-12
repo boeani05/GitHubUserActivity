@@ -49,7 +49,7 @@ The application fulfills the following requirements:
    ```
    **Example:**
    ```bash
-   java UserActivityApp kamranahmedse
+   java -cp out UserActivityApp kamranahmedse
    ```
 
 ## Example Output
