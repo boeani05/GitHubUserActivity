@@ -41,11 +41,11 @@ The application fulfills the following requirements:
    ```
 2. **Compile the Java code:**
    ```bash
-   javac UserActivityApp.java UserActivity.java
+   javac -d out src/*.java
    ```
 3. **Run the application:**
    ```bash
-   java UserActivityApp <github-username>
+   java -cp out UserActivityApp <username>
    ```
    **Example:**
    ```bash
