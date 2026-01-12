@@ -87,6 +87,7 @@ This project provided valuable hands-on experience in several key areas:
 roadmap.sh. The AI played a crucial role in breaking down complex problems into manageable steps, suggesting effective
 strategies for regex construction, debugging logical flow, and refining code structure, which significantly enhanced the
 learning process.
+Check out the project on roadmap.sh: https://roadmap.sh/projects/github-user-activity
 
 ## Future Enhancements
 
